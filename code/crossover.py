@@ -80,29 +80,65 @@ def repair(
     """
     # Need to know so we can get the correct hamper to fix
     x, y = crossover_point
-    to_fix = solution[x, :]
+    to_fix = solution[y, :]
 
     # All units must be used no more no less
     expected_units = num_units[y]
-    units = num_units.sum()
+    units = to_fix.sum()
     diff = units - expected_units
+
+    print(units)
+    print(diff)
 
     # There are additional items to be assigned
     if diff > 0:
-        best_hampers = np.argsort(hamper_values)
-        import pdb; pdb.set_trace()
+        solution[y, :] = remove_excess_items(to_fix, hamper_values, diff)
     # More items have been assigned that are available
     elif diff < 0:
-        hamper_value = np.dot(hamper_values, solution)
-        best_hampers = np.argsort(hamper_value)[::-1]
+        solution[y, :] = add_missing_items(to_fix, hamper_values, diff)
+        pass
 
     return solution
 
 
-def add_missing_items():
-    return
+def add_missing_items(
+    to_fix: NDArray,
+    hamper_values: NDArray,
+    num_to_add: int,
+) -> NDArray:
+    # Indexes of hamper values in order of cheapest to most expensive
+    cheapest_hampers = np.argsort(hamper_values)
+
+    # Get binary hamper assignments in order of hamper value
+    sorted_assignment = to_fix[cheapest_hampers]
+
+    # Get indices of hampers that are currently 0 so we can set them to 1
+    cheapest_zeros = cheapest_hampers[sorted_assignment==0]
+    to_flip = cheapest_zeros[0:num_to_add]
+
+    # Set the cheapest hampers that are current 0 to 1
+    to_fix[to_flip] = 1
+
+    return to_fix
 
 
-def remove_excess_items():
-    return
+def remove_excess_items(
+    to_fix: NDArray,
+    hamper_values: NDArray,
+    num_to_remove: int,
+) -> NDArray:
+    # Indexes of hamper values in order of cheapest to most expensive
+    cheapest_hampers = np.argsort(hamper_values)[::-1]
+
+    # Get chromosome slice in order of cheapest to most expensive hamper
+    sorted_assignment = to_fix[cheapest_hampers]
+
+    # Get indices of hampers that are currently 1 so we can set them to 0
+    cheapest_zeros = cheapest_hampers[sorted_assignment==1]
+    to_flip = cheapest_zeros[0:num_to_remove]
+
+    # Set the cheapest hampers that are current 0 to 1
+    to_fix[to_flip] = 0
+
+    return to_fix
 
