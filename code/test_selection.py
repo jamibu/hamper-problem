@@ -4,7 +4,6 @@ from initialise import initialise_population
 
 
 def test_fitness_calc():
-
     chromosome = np.array([
         [1, 1, 0, 0],
         [1, 0, 1, 0],

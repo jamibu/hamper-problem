@@ -5,27 +5,35 @@ import numpy as np
 
 
 def crossover(
-    parent1: NDArray,
-    parent2: NDArray,
+    parents: list[NDArray],
+    num_offspring: int,
     num_units: NDArray,
-    item_values: NDArray
-) -> tuple[NDArray, NDArray]:
-    # Point at which we crossover should be random (can't be at the very ends though)
-    cross_x = randint(0, parent1.shape[1])
-    cross_y = randint(0, parent2.shape[0])
-    crossover_point = (cross_x, cross_y)
+    item_values: NDArray,
+) -> list:
+    # Iterate through
+    children = []
+    for i in range(0, num_offspring, 2):
+        parent1 = parents[i]
+        parent2 = parents[i + 1]
 
-    # One point crossover
-    child1, child2 = make_offspring(parent1, parent2, (cross_x, cross_y))
+        # Point at which we crossover should be random (can't be at the very ends though)
+        cross_x = randint(0, parent1.shape[1])
+        cross_y = randint(0, parent2.shape[0])
+        crossover_point = (cross_x, cross_y)
 
-    # Crossover algorithm used above can produce illegal solutions
-    child1_values = np.dot(item_values, child1)
-    child1 = repair(child1, crossover_point, num_units, child1_values)
+        # One point crossover
+        child1, child2 = make_offspring(parent1, parent2, (cross_x, cross_y))
 
-    child2_values = np.dot(item_values, child2)
-    child2 = repair(child2, crossover_point, num_units, child2_values)
+        # Crossover algorithm used above can produce illegal solutions
+        child1_values = np.dot(item_values, child1)
+        child1 = repair(child1, crossover_point, num_units, child1_values)
+        child2_values = np.dot(item_values, child2)
+        child2 = repair(child2, crossover_point, num_units, child2_values)
 
-    return child1, child2
+        children.append(child1)
+        children.append(child2)
+
+    return children
 
 
 def make_offspring(
