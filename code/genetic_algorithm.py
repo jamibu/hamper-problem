@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from numpy.typing import NDArray
 
 from initialise import initialise_population
 from selection import fitness_calc, selection
@@ -20,6 +19,7 @@ def main():
 
     # Top half of solutions will be used to create  new solutions
     num_parents = int(pop_size / 2)
+    num_offspring = pop_size - num_parents
 
     # Initialise population
     population = initialise_population(
@@ -33,12 +33,25 @@ def main():
     price = item_data["price per unit"].values
     for i in range(1, num_generations + 1):
         # Determine fitness of current generation
-        fitness = [fitness_calc(c, price, target) for c in population]
+        fitness = np.array([fitness_calc(c, price, target) for c in population])
 
         # Check if termination critera are met
 
         # Select fittest solutions to create new solutions
         parents = selection(fitness, num_parents, population)
+        # Do crossover to produce new solutions
+        offspring = crossover(
+            parents,
+            num_offspring,
+            units,
+            price,
+            crossover_rate=0.8
+        )
+
+        # Mutate some offspring
+        mutants = [mutate(chromosome) for chromosome in offspring]
+
+        population = parents + mutants
 
     # Display results
 

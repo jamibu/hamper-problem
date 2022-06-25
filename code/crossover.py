@@ -9,12 +9,19 @@ def crossover(
     num_offspring: int,
     num_units: NDArray,
     item_values: NDArray,
+    crossover_rate: float,
 ) -> list:
-    # Iterate through
+    # Iterate through parents
     children = []
     for i in range(0, num_offspring, 2):
+        # Get pair of parents
         parent1 = parents[i]
         parent2 = parents[i + 1]
+
+        if uniform(0, 1) > crossover_rate:
+            children.append(parent1)
+            children.append(parent2)
+            continue
 
         # Point at which we crossover should be random (can't be at the very ends though)
         cross_x = randint(0, parent1.shape[1])
