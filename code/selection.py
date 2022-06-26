@@ -21,5 +21,5 @@ def selection(fitness: np.ndarray, num_parents: int, population: list) -> list:
     fitness_idx = fitness.argsort()
     sorted_population = population_arr[fitness_idx]
 
-    return sorted_population[0:num_parents]
+    return list(sorted_population[0:num_parents])
 

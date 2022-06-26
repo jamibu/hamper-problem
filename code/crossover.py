@@ -1,4 +1,4 @@
-from random import randint, uniform
+from random import randint
 
 from numpy.typing import NDArray
 import numpy as np
@@ -9,33 +9,20 @@ def crossover(
     num_offspring: int,
     num_units: NDArray,
     item_values: NDArray,
-    crossover_rate: float,
 ) -> list:
     # Iterate through parents
     children = []
-    for i in range(0, num_offspring, 2):
+    for i in range(0, num_offspring - 1, 2):
         # Get pair of parents
         parent1 = parents[i]
         parent2 = parents[i + 1]
 
-        if uniform(0, 1) > crossover_rate:
-            children.append(parent1)
-            children.append(parent2)
-            continue
-
-        # Point at which we crossover should be random (can't be at the very ends though)
-        cross_x = randint(0, parent1.shape[1])
-        cross_y = randint(0, parent2.shape[0])
-        crossover_point = (cross_x, cross_y)
-
-        # One point crossover
-        child1, child2 = make_offspring(parent1, parent2, (cross_x, cross_y))
-
-        # Crossover algorithm used above can produce illegal solutions
-        child1_values = np.dot(item_values, child1)
-        child1 = repair(child1, crossover_point, num_units, child1_values)
-        child2_values = np.dot(item_values, child2)
-        child2 = repair(child2, crossover_point, num_units, child2_values)
+        child1, child2 = cross_and_repair(
+            parent1,
+            parent2,
+            num_units,
+            item_values
+        )
 
         children.append(child1)
         children.append(child2)
@@ -43,7 +30,26 @@ def crossover(
     return children
 
 
-def make_offspring(
+def cross_and_repair(parent1, parent2, num_units, item_values):
+    # Point at which we crossover should be random (can't be at the very ends though)
+    cross_x = randint(0, parent1.shape[1] - 1)
+    cross_y = randint(0, parent2.shape[0] - 1)
+    crossover_point = (cross_y, cross_x)
+
+    # One point crossover
+    child1, child2 = onepoint_crossover(parent1, parent2, crossover_point)
+
+    # Crossover algorithm used above can produce illegal solutions
+    child1_values = np.dot(item_values, child1)
+    repaired1 = repair(child1, crossover_point, num_units, child1_values)
+
+    child2_values = np.dot(item_values, child2)
+    repaired2 = repair(child2, crossover_point, num_units, child2_values)
+
+    return repaired1, repaired2
+
+
+def onepoint_crossover(
     parent1: NDArray,
     parent2: NDArray,
     crossover_point: tuple[int, int]
@@ -94,7 +100,7 @@ def repair(
         NDArray: Repaired solution.
     """
     # Need to know so we can get the correct hamper to fix
-    x, y = crossover_point
+    y, _ = crossover_point
     to_fix = solution[y, :]
 
     # All units must be used no more no less
@@ -102,16 +108,12 @@ def repair(
     units = to_fix.sum()
     diff = units - expected_units
 
-    print(units)
-    print(diff)
-
     # There are additional items to be assigned
     if diff > 0:
         solution[y, :] = remove_excess_items(to_fix, hamper_values, diff)
     # More items have been assigned that are available
     elif diff < 0:
-        solution[y, :] = add_missing_items(to_fix, hamper_values, diff)
-        pass
+        solution[y, :] = add_missing_items(to_fix, hamper_values, abs(diff))
 
     return solution
 
