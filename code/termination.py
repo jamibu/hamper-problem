@@ -1,6 +1,14 @@
 from numpy.typing import NDArray
 
 
-def terminate(fitness: NDArray, target: int, gen: int, max_gen: int) -> bool:
-    return True
+def terminate(
+    fitness: NDArray,
+    target: int,
+) -> bool:
+    if fitness <= target:
+        result = True
+    else:
+        result = False
+
+    return result
 
