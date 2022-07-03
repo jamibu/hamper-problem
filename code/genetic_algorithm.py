@@ -17,7 +17,6 @@ def main():
     num_generations = 1000
 
     # Terminate after this many generations with no improvement
-    terminate_after = 10
     target_fitness = 1709
 
     # Problem inputs
