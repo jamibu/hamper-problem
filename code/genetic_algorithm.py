@@ -14,7 +14,7 @@ from mutation import mutate
 def main():
     # GA Settings
     pop_size = 250
-    num_generations = 1000
+    num_generations = 500
 
     # Terminate after this many generations with no improvement
     target_fitness = 1709
